@@ -141,13 +141,25 @@ import { EmployeeService, Employee } from '../../services/employee.service';
     }
 
     .error {
-      color: #e74c3c;
+      color: #c0392b;
+      background-color: #fadbd8;
+      padding: 12px;
+      border-radius: 4px;
       margin-top: 10px;
+      border-left: 4px solid #e74c3c;
+      font-weight: 500;
+      white-space: pre-wrap;
+      line-height: 1.5;
     }
 
     .success {
-      color: #27ae60;
+      color: #1e8449;
+      background-color: #d5f4e6;
+      padding: 12px;
+      border-radius: 4px;
       margin-top: 10px;
+      border-left: 4px solid #27ae60;
+      font-weight: 500;
     }
 
     .attendance-section {
@@ -251,24 +263,58 @@ export class AttendanceComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    if (!this.newAttendance.employee_id) {
-      this.errorMessage = 'Please select an employee';
+    // Frontend validation - check required fields
+    if (!this.newAttendance.employee_id?.trim()) {
+      this.errorMessage = '❌ Please select an employee';
       return;
     }
 
-    if (!this.newAttendance.date) {
-      this.errorMessage = 'Please select a date';
+    if (!this.newAttendance.date?.trim()) {
+      this.errorMessage = '❌ Please select a date';
       return;
     }
 
-    if (!this.newAttendance.status) {
-      this.errorMessage = 'Please select a status';
+    if (!this.newAttendance.status?.trim()) {
+      this.errorMessage = '❌ Please select a status (Present or Absent)';
+      return;
+    }
+
+    // Validate date format (YYYY-MM-DD)
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(this.newAttendance.date)) {
+      this.errorMessage = '❌ Invalid date format. Please use YYYY-MM-DD format';
+      return;
+    }
+
+    // Check if date is in future
+    const selectedDate = new Date(this.newAttendance.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (selectedDate > today) {
+      this.errorMessage = '❌ Attendance date cannot be in the future. Please select today or an earlier date.';
+      return;
+    }
+
+    // Check if date is too old (more than 5 years)
+    const fiveYearsAgo = new Date();
+    fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
+    fiveYearsAgo.setHours(0, 0, 0, 0);
+    
+    if (selectedDate < fiveYearsAgo) {
+      this.errorMessage = '❌ Attendance date cannot be more than 5 years in the past';
+      return;
+    }
+
+    // Validate status is Present or Absent
+    if (!['Present', 'Absent'].includes(this.newAttendance.status)) {
+      this.errorMessage = '❌ Status must be either "Present" or "Absent"';
       return;
     }
 
     this.attendanceService.markAttendance(this.newAttendance).subscribe({
       next: () => {
-        this.successMessage = 'Attendance marked successfully';
+        this.successMessage = `✅ Attendance marked successfully for ${this.getEmployeeName(this.newAttendance.employee_id)} on ${this.newAttendance.date}`;
         this.newAttendance = {
           employee_id: '',
           date: '',
@@ -278,7 +324,44 @@ export class AttendanceComponent implements OnInit {
         setTimeout(() => this.successMessage = '', 3000);
       },
       error: (error) => {
-        this.errorMessage = error.error?.detail || 'Error marking attendance';
+        const detail = error.error?.detail;
+        
+        // Handle specific error messages
+        if (typeof detail === 'string') {
+          if (detail.includes('not found')) {
+            this.errorMessage = `❌ Employee not found. Please select a valid employee.`;
+          } else if (detail.includes('future')) {
+            this.errorMessage = `❌ Cannot mark attendance for future dates`;
+          } else if (detail.includes('5 years')) {
+            this.errorMessage = `❌ Cannot mark attendance for dates older than 5 years`;
+          } else if (detail.includes('already marked')) {
+            this.errorMessage = `❌ Attendance already marked for this date. Cannot mark twice for the same date.`;
+          } else if (detail.includes('Status must be')) {
+            this.errorMessage = `❌ Invalid status. Only "Present" or "Absent" allowed`;
+          } else if (detail.includes('YYYY-MM-DD')) {
+            this.errorMessage = `❌ Invalid date format. Please use YYYY-MM-DD`;
+          } else {
+            this.errorMessage = `❌ ${detail}`;
+          }
+        } else if (Array.isArray(detail)) {
+          // Handle Pydantic validation errors
+          const errors = detail.map((err: any) => {
+            const field = err.loc?.[1] || 'field';
+            const msg = err.msg || 'Invalid input';
+            if (field === 'date') {
+              return `❌ Invalid date: ${msg}`;
+            } else if (field === 'employee_id') {
+              return `❌ Invalid employee: ${msg}`;
+            } else if (field === 'status') {
+              return `❌ Invalid status: ${msg}`;
+            } else {
+              return `❌ ${field}: ${msg}`;
+            }
+          }).join('\n');
+          this.errorMessage = errors;
+        } else {
+          this.errorMessage = '❌ Error marking attendance. Please try again.';
+        }
         console.error('Attendance error:', error);
       }
     });
