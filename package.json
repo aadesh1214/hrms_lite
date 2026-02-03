@@ -1,0 +1,19 @@
+{
+  "name": "hrms-lite",
+  "version": "1.0.0",
+  "description": "Human Resource Management System Lite",
+  "scripts": {
+    "backend:setup": "cd backend && pip install -r requirements.txt",
+    "backend:start": "cd backend && python main.py",
+    "frontend:setup": "cd frontend && npm install",
+    "frontend:start": "cd frontend && npm start",
+    "docker:up": "docker-compose up --build",
+    "docker:down": "docker-compose down"
+  },
+  "keywords": [
+    "hrms",
+    "employee",
+    "attendance",
+    "management"
+  ]
+}

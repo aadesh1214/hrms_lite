@@ -1,0 +1,17 @@
+import os
+from pymongo import MongoClient
+from dotenv import load_dotenv
+
+load_dotenv()
+
+MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
+DATABASE_NAME = "hrms_lite"
+
+client = MongoClient(MONGO_URL)
+db = client[DATABASE_NAME]
+
+employees_collection = db["employees"]
+attendance_collection = db["attendance"]
+
+def get_db():
+    return db
