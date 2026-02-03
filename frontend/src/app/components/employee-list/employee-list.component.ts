@@ -156,25 +156,13 @@ import { EmployeeService, Employee } from '../../services/employee.service';
     }
 
     .error {
-      color: #c0392b;
-      background-color: #fadbd8;
-      padding: 12px;
-      border-radius: 4px;
+      color: #e74c3c;
       margin-top: 10px;
-      border-left: 4px solid #e74c3c;
-      font-weight: 500;
-      white-space: pre-wrap;
-      line-height: 1.5;
     }
 
     .success {
-      color: #1e8449;
-      background-color: #d5f4e6;
-      padding: 12px;
-      border-radius: 4px;
+      color: #27ae60;
       margin-top: 10px;
-      border-left: 4px solid #27ae60;
-      font-weight: 500;
     }
 
     .employees-section {
@@ -247,59 +235,15 @@ export class EmployeeListComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    // Frontend validation - check for empty fields
-    if (!this.newEmployee.employee_id?.trim()) {
-      this.errorMessage = '❌ Employee ID is required';
-      return;
-    }
-    if (!this.newEmployee.full_name?.trim()) {
-      this.errorMessage = '❌ Full Name is required';
-      return;
-    }
-    if (!this.newEmployee.email?.trim()) {
-      this.errorMessage = '❌ Email is required';
-      return;
-    }
-    if (!this.newEmployee.department?.trim()) {
-      this.errorMessage = '❌ Department is required';
-      return;
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(this.newEmployee.email)) {
-      this.errorMessage = '❌ Please enter a valid email address (e.g., user@example.com)';
-      return;
-    }
-
-    // Check if all fields are identical (suspicious test data)
-    const id = this.newEmployee.employee_id.toLowerCase().trim();
-    const name = this.newEmployee.full_name.toLowerCase().trim();
-    const email = this.newEmployee.email.toLowerCase().trim();
-    const dept = this.newEmployee.department.toLowerCase().trim();
-
-    if (id === name && name === email && email === dept) {
-      this.errorMessage = '❌ All fields cannot have the same value. Please provide valid employee information.';
-      return;
-    }
-
-    // Check length constraints
-    if (this.newEmployee.employee_id.length > 50) {
-      this.errorMessage = '❌ Employee ID cannot exceed 50 characters';
-      return;
-    }
-    if (this.newEmployee.full_name.length > 100) {
-      this.errorMessage = '❌ Full Name cannot exceed 100 characters';
-      return;
-    }
-    if (this.newEmployee.department.length > 50) {
-      this.errorMessage = '❌ Department cannot exceed 50 characters';
+    if (!this.newEmployee.employee_id || !this.newEmployee.full_name ||
+        !this.newEmployee.email || !this.newEmployee.department) {
+      this.errorMessage = 'All fields are required';
       return;
     }
 
     this.employeeService.createEmployee(this.newEmployee).subscribe({
       next: () => {
-        this.successMessage = '✅ Employee added successfully!';
+        this.successMessage = 'Employee added successfully';
         this.newEmployee = {
           employee_id: '',
           full_name: '',
@@ -310,35 +254,7 @@ export class EmployeeListComponent implements OnInit {
         setTimeout(() => this.successMessage = '', 3000);
       },
       error: (error) => {
-        // Handle specific backend error messages
-        const detail = error.error?.detail;
-        if (typeof detail === 'string') {
-          if (detail.includes('already exists')) {
-            this.errorMessage = `❌ ${detail}`;
-          } else if (detail.includes('already registered')) {
-            this.errorMessage = `❌ ${detail}`;
-          } else if (detail.includes('All fields')) {
-            this.errorMessage = `❌ ${detail}`;
-          } else {
-            this.errorMessage = `❌ ${detail}`;
-          }
-        } else if (Array.isArray(detail)) {
-          // Handle Pydantic validation errors
-          const errors = detail.map((err: any) => {
-            const field = err.loc?.[1] || 'field';
-            const msg = err.msg || 'Invalid input';
-            if (field === 'email') {
-              return `❌ Invalid email format: ${msg}`;
-            } else if (field === 'employee_id') {
-              return `❌ Invalid Employee ID: ${msg}`;
-            } else {
-              return `❌ ${field}: ${msg}`;
-            }
-          }).join('\n');
-          this.errorMessage = errors;
-        } else {
-          this.errorMessage = '❌ Error adding employee. Please try again.';
-        }
+        this.errorMessage = error.error?.detail || 'Error adding employee';
       }
     });
   }
@@ -347,17 +263,12 @@ export class EmployeeListComponent implements OnInit {
     if (confirm('Are you sure you want to delete this employee? This will also delete all their attendance records.')) {
       this.employeeService.deleteEmployee(employeeId).subscribe({
         next: (response) => {
-          this.successMessage = `✅ ${response.message || 'Employee deleted successfully'} (${response.deleted_attendance_records} attendance records removed)`;
+          this.successMessage = response.message || 'Employee deleted successfully';
           this.loadEmployees();
           setTimeout(() => this.successMessage = '', 3000);
         },
         error: (error) => {
-          const detail = error.error?.detail;
-          if (detail?.includes('not found')) {
-            this.errorMessage = `❌ ${detail}`;
-          } else {
-            this.errorMessage = `❌ ${detail || 'Error deleting employee. Please try again.'}`;
-          }
+          this.errorMessage = error.error?.detail || 'Error deleting employee';
           console.error('Delete error:', error);
         }
       });
