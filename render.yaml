@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: hrms-lite-backend
+    env: docker
+    region: oregon
+    plan: free
+    repo: https://github.com/aadesh1214/hrms_lite
+    rootDir: backend
+    dockerfilePath: Dockerfile
+    envVars:
+      - key: MONGO_URL
+        scope: build
