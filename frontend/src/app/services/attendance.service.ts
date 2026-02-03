@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
 
 export interface Attendance {
   id?: string;
@@ -15,7 +14,11 @@ export interface Attendance {
   providedIn: 'root'
 })
 export class AttendanceService {
-  private apiUrl = environment.apiUrl + environment.apiEndpoints.attendance;
+  private apiUrl = `${this.getApiUrl()}/api/attendance/`;
+
+  private getApiUrl(): string {
+    return (window as any).__env__?.['NG_APP_API_URL'] || 'http://localhost:8000';
+  }
 
   constructor(private http: HttpClient) {}
 
