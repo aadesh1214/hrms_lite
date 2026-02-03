@@ -1,6 +1,7 @@
 node_modules/
 .venv/
 venv/
+myenv/
 __pycache__/
 *.pyc
 .env
@@ -10,3 +11,4 @@ dist/
 build/
 .angular/
 *.log
+package-lock.json

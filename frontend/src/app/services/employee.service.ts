@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface Employee {
   id?: string;
@@ -14,7 +15,7 @@ export interface Employee {
   providedIn: 'root'
 })
 export class EmployeeService {
-  private apiUrl = 'http://localhost:8000/api/employees';
+  private apiUrl = environment.apiUrl + environment.apiEndpoints.employees;
 
   constructor(private http: HttpClient) {}
 
@@ -30,7 +31,7 @@ export class EmployeeService {
     return this.http.get<Employee>(`${this.apiUrl}/${employeeId}`);
   }
 
-  deleteEmployee(employeeId: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${employeeId}`);
+  deleteEmployee(employeeId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}${employeeId}`);
   }
 }

@@ -251,9 +251,18 @@ export class AttendanceComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    if (!this.newAttendance.employee_id || !this.newAttendance.date ||
-        !this.newAttendance.status) {
-      this.errorMessage = 'All fields are required';
+    if (!this.newAttendance.employee_id) {
+      this.errorMessage = 'Please select an employee';
+      return;
+    }
+
+    if (!this.newAttendance.date) {
+      this.errorMessage = 'Please select a date';
+      return;
+    }
+
+    if (!this.newAttendance.status) {
+      this.errorMessage = 'Please select a status';
       return;
     }
 
@@ -270,6 +279,7 @@ export class AttendanceComponent implements OnInit {
       },
       error: (error) => {
         this.errorMessage = error.error?.detail || 'Error marking attendance';
+        console.error('Attendance error:', error);
       }
     });
   }

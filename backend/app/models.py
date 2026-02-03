@@ -28,6 +28,10 @@ class AttendanceResponse(BaseModel):
     employee_id: str
     date: str
     status: str
+    created_at: Optional[str] = None
+
+    class Config:
+        populate_by_name = True
     created_at: datetime
 
     class Config:

@@ -260,15 +260,16 @@ export class EmployeeListComponent implements OnInit {
   }
 
   deleteEmployee(employeeId: string) {
-    if (confirm('Are you sure you want to delete this employee?')) {
+    if (confirm('Are you sure you want to delete this employee? This will also delete all their attendance records.')) {
       this.employeeService.deleteEmployee(employeeId).subscribe({
-        next: () => {
-          this.successMessage = 'Employee deleted successfully';
+        next: (response) => {
+          this.successMessage = response.message || 'Employee deleted successfully';
           this.loadEmployees();
           setTimeout(() => this.successMessage = '', 3000);
         },
         error: (error) => {
-          this.errorMessage = 'Error deleting employee';
+          this.errorMessage = error.error?.detail || 'Error deleting employee';
+          console.error('Delete error:', error);
         }
       });
     }
