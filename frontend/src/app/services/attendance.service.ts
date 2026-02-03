@@ -17,7 +17,7 @@ export class AttendanceService {
   private apiUrl = `${this.getApiUrl()}/api/attendance/`;
 
   private getApiUrl(): string {
-    return (window as any).__env__?.['NG_APP_API_URL'] || 'http://localhost:8000';
+    return (window as any).__env__?.['NG_APP_API_URL'] || 'https://hrms-lite-backend-testing.onrender.com' || 'http://localhost:8000';
   }
 
   constructor(private http: HttpClient) {}
