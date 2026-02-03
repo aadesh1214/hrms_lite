@@ -10,7 +10,7 @@ app = FastAPI(title="HRMS Lite API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://hrms-lite-frontend.onrender.com"],
+    allow_origins=["https://hrms-lite-frontend-42la.onrender.com"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
